@@ -1,0 +1,48 @@
+# Node.js / TypeScript
+node_modules/
+*.tsbuildinfo
+
+# Playwright outputs
+test-results/
+playwright-report/
+blob-report/
+trace.zip
+*.zip
+*.mp4
+*.png
+
+# Cucumber reports
+reports/
+cucumber-report.json
+cucumber-report.html
+
+# Environment configs
+.env
+.env.*
+config/local.json
+
+# IDE/editor
+.vscode/
+.idea/
+.history/
+
+# OS/system clutter
+.DS_Store
+Thumbs.db
+
+# Logs & coverage
+logs/
+*.log
+coverage/
+lcov-report/
+
+# Ignore accidental home/system files
+*.bashrc*
+*.bash_logout
+*.bash_history
+*.apport-ignore.xml
+*.save*
+*.pub
+*.key
+*.settings
+.android/
