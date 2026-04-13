@@ -1,12 +1,23 @@
-import { Before, After } from '@cucumber/cucumber';
-import { chromium, Browser, Page } from '@playwright/test';
+import { Before, After, setDefaultTimeout } from '@cucumber/cucumber';
+import { chromium, Browser, Page, BrowserContext } from '@playwright/test';
 
 let browser: Browser;
+let context: BrowserContext;
 let page: Page;
 
+setDefaultTimeout(60 * 1000);
+
 Before(async function () {
-  browser = await chromium.launch({ headless: false });
-  page = await browser.newPage();
+  browser = await chromium.launch({
+    headless: false,
+    args: ['--start-maximized'] // ✅ maximize at browser level
+  });
+
+  context = await browser.newContext({
+    viewport: null // ✅ removes fixed viewport → full screen
+  });
+
+  page = await context.newPage();
   this.page = page;
 });
 

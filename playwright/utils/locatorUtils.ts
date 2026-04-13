@@ -11,9 +11,15 @@ export class LocatorUtils {
   }
   //  contains text with optional index
   static containsTextIn(tag: string, text: string, index?: number) {
-    const base = `//${tag}[contains(text(),'${text}')]`;
+    const base = `//${tag}[contains(normalize-space(.),'${text}')]`;
     return index !== undefined ? `(${base})[${index}]` : base;
   }
+
+  static containsText(text: string, index?: number) {
+    const base = `//*[contains(normalize-space(.),'${text}')]`;
+    return index !== undefined ? `(${base})[${index}]` : base;
+  }
+
   // contains with default xpath tag 
     static byAttribute(tag: string, attribute: string, value: string) {
     return `//${tag}[@${attribute}='${value}']`;

@@ -4,14 +4,20 @@ export class ActionUtils {
   constructor(private page: Page) {}
 
   async fill(locator: string, value: string) {
-    await this.page.locator(locator).fill(value);
+    const element = this.page.locator(locator);
+    await element.waitFor({ state: 'visible', timeout: 30000 });
+    await element.scrollIntoViewIfNeeded();
+    await element.fill(value, { timeout: 30000 });
   }
 
   async click(locator: string) {
-    await this.page.locator(locator).click();
+    const element = this.page.locator(locator);
+    await element.waitFor({ state: 'visible', timeout: 30000 });
+    await element.scrollIntoViewIfNeeded();
+    await element.click({ timeout: 30000 });
   }
 
   async navigate(url: string) {
-    await this.page.goto(url);
+    await this.page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
   }
 }

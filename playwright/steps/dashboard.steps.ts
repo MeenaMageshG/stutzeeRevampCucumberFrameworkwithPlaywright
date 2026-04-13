@@ -16,13 +16,8 @@ Given('user is logged in', async function () {
   await loginPage.login('demo@stutzee.com', '123456789');
 
   // ✅ Wait for dashboard load (IMPORTANT)
-  await this.page.waitForURL('**/dashboard');
+  await this.page.waitForURL('**/dashboard', { timeout: 60000 });
 });
-
-When('user clicks on hamburger menu', async function () {
-  await dashboardPage.clickHamburgerMenu();
-});
-
 When('user clicks on Events in side menu', async function () {
   await dashboardPage.clickEventsMenu();
 });

@@ -9,11 +9,6 @@ export class DashboardPage {
     this.action = new ActionUtils(page);
   }
 
-  async clickHamburgerMenu() {
-    await this.page.locator(dashboardLocators.hamburgerMenu).waitFor();
-    await this.action.click(dashboardLocators.hamburgerMenu);
-  }
-
   async clickEventsMenu() {
     await this.page.locator(dashboardLocators.eventsMenu).waitFor();
     await this.action.click(dashboardLocators.eventsMenu);
