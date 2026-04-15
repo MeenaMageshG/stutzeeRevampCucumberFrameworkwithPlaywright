@@ -35,4 +35,11 @@ static exactTextNormalized(tag: string, text: string, index?: number) {
   const base = `//${tag}[normalize-space(text())='${text}']`;
   return index !== undefined ? `(${base})[${index}]` : base;
 }
+static ticketCard(ticketName: string) {
+  return `//div[contains(@class,'MuiCardContent-root') and 
+          contains(translate(normalize-space(.),
+          'abcdefghijklmnopqrstuvwxyz','ABCDEFGHIJKLMNOPQRSTUVWXYZ'),
+          '${ticketName.toUpperCase()}')]`;
+}
+
   }
