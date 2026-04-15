@@ -1,12 +1,12 @@
 {
-  "name": "stutzee-(-playwright-with-cucumber-framework-)",
+  "name": "stutzee-playwright-with-cucumber-framework",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "cucumber-js --require-module ts-node/register --require playwright/steps/**/*.ts playwright/features/**/*.feature",
-    "test:smoke": "cucumber-js --require-module ts-node/register --require playwright/steps/**/*.ts playwright/features/**/*.feature --tags \"@smoke\"",
-    "test:single": "cucumber-js playwright/features/promocode.feature --require-module ts-node/register --require playwright/steps/**/*.ts"
-  },
+      "test": "cucumber-js --require-module ts-node/register --require playwright/steps/**/*.ts playwright/features/**/*.feature --format progress --format html:reports/cucumber-report.html",
+        "test:smoke": "cucumber-js --require-module ts-node/register --require playwright/steps/**/*.ts playwright/features/**/*.feature --tags \"@smoke\" --format progress --format html:reports/cucumber-report.html",
+          "test:single": "cucumber-js playwright/features/promocode.feature --require-module ts-node/register --require playwright/steps/**/*.ts --format progress --format html:reports/cucumber-report.html"
+},
   "keywords": [],
   "author": "",
   "license": "ISC",
