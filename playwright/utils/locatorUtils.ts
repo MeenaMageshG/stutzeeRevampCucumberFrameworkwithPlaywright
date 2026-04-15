@@ -21,7 +21,18 @@ export class LocatorUtils {
   }
 
   // contains with default xpath tag 
-    static byAttribute(tag: string, attribute: string, value: string) {
-    return `//${tag}[@${attribute}='${value}']`;
-  }
+    static byAttribute(tag: string, attribute: string, value: string, index?: number) {
+  const base = `//${tag}[@${attribute}='${value}']`;
+  return index !== undefined ? `(${base})[${index}]` : base;
 }
+//with class as attribute
+static byClass(tag: string, className: string, index?: number) {
+  const base = `//${tag}[contains(@class, '${className}')]`;
+  return index !== undefined ? `(${base})[${index}]` : base;
+}
+//li tag with normalized text
+static exactTextNormalized(tag: string, text: string, index?: number) {
+  const base = `//${tag}[normalize-space(text())='${text}']`;
+  return index !== undefined ? `(${base})[${index}]` : base;
+}
+  }

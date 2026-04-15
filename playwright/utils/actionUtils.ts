@@ -7,7 +7,10 @@ export class ActionUtils {
     const element = this.page.locator(locator);
     await element.waitFor({ state: 'visible', timeout: 30000 });
     await element.scrollIntoViewIfNeeded();
-    await element.fill(value, { timeout: 30000 });
+    const isDisabled = await element.isDisabled().catch(() => false);
+    if (!isDisabled) {
+      await element.fill(value, { timeout: 30000 });
+    }
   }
 
   async click(locator: string) {

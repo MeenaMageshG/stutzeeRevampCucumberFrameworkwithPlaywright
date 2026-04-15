@@ -1,6 +1,6 @@
 module.exports = {
   default: {
-    paths: ["playwright/features/**/*.feature"],
+   // paths: ["playwright/features/**/*.feature"],
 
     require: [
       "playwright/steps/**/*.ts",  

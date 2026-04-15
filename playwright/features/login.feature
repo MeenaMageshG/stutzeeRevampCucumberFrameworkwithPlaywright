@@ -1,4 +1,4 @@
-Feature: Login Module
+Feature: @LoginModule
 
   Scenario: Valid Login
     Given user is on login page

@@ -48,6 +48,10 @@ export class TicketCategoryPage {
   async clickCreateTicketCategory() {
     const button = this.page.locator(ticketCategoryLocators.createTicketCategoryButton);
     await button.waitFor({ state: 'visible', timeout: 30000 });
+    const enabled = await button.isEnabled();
+    if (!enabled) {
+      throw new Error('Create Ticket Category button is visible but not enabled/clickable');
+    }
     await button.scrollIntoViewIfNeeded();
     try {
       await button.click({ timeout: 30000 });
