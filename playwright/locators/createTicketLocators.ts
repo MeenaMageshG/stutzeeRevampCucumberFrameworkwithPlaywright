@@ -4,7 +4,7 @@ export const ticketLocators = {
   createTicketButton: LocatorUtils.containsTextIn('button', 'Create Ticket', 2),
   categoryDropdown: LocatorUtils.containsTextIn('span', 'Choose Category', 2),
   ticketCategoryDropdown: LocatorUtils.byAttribute('div','role', 'combobox'),
-  categoryOptionVIP: LocatorUtils.exactTextNormalized('li', 'VIP'),
+  categoryOption: (categoryName: string) => LocatorUtils.exactTextNormalized('li', categoryName),
   ticketNameInput: LocatorUtils.ID('ticketName'),
   ticketTypeDropdown: LocatorUtils.containsTextIn('button', 'Free'),
   ticketTypeDropdownasPaid: LocatorUtils.containsTextIn('button', 'Paid'), // Free / Paid

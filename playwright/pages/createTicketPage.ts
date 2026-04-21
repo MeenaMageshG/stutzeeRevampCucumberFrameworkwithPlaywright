@@ -14,10 +14,28 @@ export class TicketPage {
     await this.page.locator(ticketLocators.ticketNameInput).waitFor({ state: 'visible', timeout: 30000 });
   }
 
-  async chooseCategory(category: string) {
+  async chooseCategory(category: string): Promise<string> {
     await this.page.locator(ticketLocators.categoryDropdown).click();
-    await this.page.locator(ticketLocators.ticketCategoryDropdown).click();
-    await this.page.locator(ticketLocators.categoryOptionVIP).click();
+
+    const dropdown = this.page.locator(ticketLocators.ticketCategoryDropdown).last();
+    await dropdown.waitFor({ state: 'visible', timeout: 30000 });
+    await dropdown.click();
+
+    const exactOption = this.page.locator(ticketLocators.categoryOption(category)).first();
+    if (await exactOption.isVisible().catch(() => false)) {
+      const selectedCategory = (await exactOption.innerText()).trim();
+      await exactOption.click();
+      return selectedCategory;
+    }
+
+    const partialOption = this.page
+      .locator(`//li[contains(translate(normalize-space(.), 'abcdefghijklmnopqrstuvwxyz', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'), '${category.trim().toUpperCase()}')]`)
+      .first();
+
+    await partialOption.waitFor({ state: 'visible', timeout: 10000 });
+    const selectedCategory = (await partialOption.innerText()).trim();
+    await partialOption.click();
+    return selectedCategory;
   }
 
   async enterTicketName(name: string) {
@@ -65,15 +83,44 @@ export class TicketPage {
   }
 
   async isTicketCreated(name: string): Promise<boolean> {
-    const ticketLocator = this.page.getByText(name, { exact: true });
-    return await ticketLocator.isVisible();
+    const ticketLocator = this.page.getByText(name, { exact: true }).first();
+    return await ticketLocator.isVisible().catch(() => false);
+  }
+
+  async isTicketListedUnderCategory(ticketName: string, categoryName: string): Promise<boolean> {
+    await this.page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
+
+    const categoryCard = this.page.locator('div.MuiCard-root').filter({
+      has: this.page.getByRole('heading', { name: categoryName, exact: true }),
+    }).first();
+
+    try {
+      await categoryCard.waitFor({ state: 'visible', timeout: 10000 });
+      const ticketLocator = categoryCard.getByText(ticketName, { exact: true }).first();
+      await ticketLocator.waitFor({ state: 'visible', timeout: 10000 });
+      return await ticketLocator.isVisible();
+    } catch {
+      return false;
+    }
   }
 
   async getErrorMessage(): Promise<string | null> {
-    const errorLocator = this.page.locator('.MuiAlert-message, .error-message');
-    if (await errorLocator.isVisible()) {
-      return await errorLocator.innerText();
+    const errorLocators = [
+      this.page.locator('.MuiFormHelperText-root'),
+      this.page.locator('.MuiAlert-message'),
+      this.page.locator('.error-message'),
+    ];
+
+    for (const locator of errorLocators) {
+      const count = await locator.count();
+      for (let i = 0; i < count; i++) {
+        const text = (await locator.nth(i).innerText().catch(() => '')).trim();
+        if (text && !text.includes('Tickets Management Tips')) {
+          return text;
+        }
+      }
     }
+
     return null;
   }
 }

@@ -13,16 +13,12 @@ Given('user is on login page', async function () {
   await loginPage.navigateToLogin();
 });
 
-When('user enters username {string}', async function (username: string) {
-  await loginPage.enterUsername(username);
+When('user logs in with valid credentials', async function () {
+  await loginPage.loginWithValidUser();
 });
 
-When('user enters password {string}', async function (password: string) {
-  await loginPage.enterPassword(password);
-});
-
-When('user clicks login button', async function () {
-  await loginPage.clickLogin();
+When('user logs in with invalid credentials', async function () {
+  await loginPage.loginWithInvalidUser();
 });
 
 Then('user should be redirected to dashboard', async function () {

@@ -6,4 +6,7 @@
     categoryDesignationInput: LocatorUtils.ID('category-name'),
     categoryDescriptionInput: LocatorUtils.ID('category-description'),
     createButton: "//button[normalize-space(.) = 'Create']",
+    categoryList: 'div.ticket-category-list',
+    categoryItem: (name: string) =>
+    `//div[contains(@class,"ticket-category-item") and normalize-space(text())="${name}"]`
   }

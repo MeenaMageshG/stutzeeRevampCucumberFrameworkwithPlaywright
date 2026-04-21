@@ -7,7 +7,7 @@ function ensurePageInitialized(context: any) {
   ticketCategoryPage = new TicketCategoryPage(context.page);
 }
 
-// Lowercase step definitions for new feature file
+// Lowercase step definitions
 When('user clicks on Event Management in side menu', async function () {
   ensurePageInitialized(this);
   await this.page.waitForLoadState('domcontentloaded').catch(() => {});
@@ -26,9 +26,7 @@ Then('user should navigate to Ticket Category page', async function () {
   ensurePageInitialized(this);
   const loaded = await ticketCategoryPage.waitForTicketCategoryPage();
   if (!loaded) {
-    const url = this.page.url();
-    console.log('Current URL:', url);
-    throw new Error(`Navigation to Ticket Category page failed. Current URL: ${url}`);
+    throw new Error(`Navigation to Ticket Category page failed. Current URL: ${this.page.url()}`);
   }
 });
 
@@ -37,10 +35,15 @@ When('user clicks on Create Ticket Category button', async function () {
   await ticketCategoryPage.clickCreateTicketCategory();
 });
 
-When('user enters ticket category name {string}', async function (name: string) {
+When('user enters ticket category name {string}', async function (baseName: string) {
   ensurePageInitialized(this);
-  await ticketCategoryPage.enterCategoryName(name);
+
+  const uniqueName = `${baseName} ${Date.now()}`;
+  this.lastCategoryName = uniqueName;
+
+  await ticketCategoryPage.enterCategoryName(uniqueName);
 });
+
 
 When('user enters ticket category description {string}', async function (desc: string) {
   ensurePageInitialized(this);
@@ -58,10 +61,16 @@ When('user clicks on createButton', async function () {
 });
 
 Then('ticket category should be created successfully', async function () {
-  console.log('Ticket Category Created');
+  ensurePageInitialized(this);
+  const name = this.lastCategoryName;
+  const listed = await ticketCategoryPage.isCategoryListed(name);
+  if (!listed) {
+    throw new Error(`Ticket category "${name}" was not found in the list`);
+  }
+  console.log(`Ticket Category "${name}" created and listed successfully`);
 });
 
-// Original capitalized versions for backward compatibility
+// Capitalized versions for backward compatibility
 Given('User navigates to Ticket Category module', async function () {
   ticketCategoryPage = new TicketCategoryPage(this.page);
   await ticketCategoryPage.navigateToTicketCategory();
@@ -72,6 +81,7 @@ When('User clicks on Create Ticket Category button', async function () {
 });
 
 When('User enters ticket category name {string}', async function (name: string) {
+  this.lastCategoryName = name;
   await ticketCategoryPage.enterCategoryName(name);
 });
 
@@ -84,9 +94,15 @@ When('User clicks on createButton', async function () {
 });
 
 When('User creates ticket category with name {string} and description {string}', async function (name: string, desc: string) {
+  this.lastCategoryName = name;
   await ticketCategoryPage.createTicketCategory(name, desc);
 });
 
 Then('Ticket category should be created successfully', async function () {
-  console.log('Ticket Category Created (Add assertion)');
+  const name = this.lastCategoryName;
+  const listed = await ticketCategoryPage.isCategoryListed(name);
+  if (!listed) {
+    throw new Error(`Ticket category "${name}" was not found in the list`);
+  }
+  console.log(`Ticket Category "${name}" created and listed successfully`);
 });

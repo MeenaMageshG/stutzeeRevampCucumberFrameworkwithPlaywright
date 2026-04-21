@@ -13,9 +13,11 @@ Given('user is logged in', async function () {
   assertion = new AssertionUtils(this.page);
 
   await loginPage.navigateToLogin();
-  await loginPage.login('demo@stutzee.com', '123456789');
 
-  // ✅ Wait for dashboard load (IMPORTANT)
+  // ✅ Use ENV-based login
+  await loginPage.loginWithValidUser();
+
+  // ✅ Wait for dashboard load
   await this.page.waitForURL('**/dashboard', { timeout: 60000 });
 });
 When('user clicks on Events in side menu', async function () {

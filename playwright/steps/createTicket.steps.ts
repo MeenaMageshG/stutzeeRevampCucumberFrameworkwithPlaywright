@@ -15,12 +15,14 @@ When('user clicks on Create Ticket button', async function () {
 
 When('user chooses category {string}', async function (category: string) {
   ensurePageInitialized(this);
-  await ticketPage.chooseCategory(category);
+  this.selectedTicketCategory = await ticketPage.chooseCategory(category);
 });
 
 When('user enters ticket name {string}', async function (name: string) {
   ensurePageInitialized(this);
-  await ticketPage.enterTicketName(name);
+  const uniqueName = name.trim().length > 0 ? `${name} ${Date.now()}` : name;
+  this.lastTicketName = uniqueName;
+  await ticketPage.enterTicketName(uniqueName);
 });
 
 When('user selects ticket type {string}', async function (type: string) {
@@ -69,9 +71,15 @@ When('user clicks on Create Ticket button in form', async function () {
 });
 
 Then('ticket should be created successfully with name {string}', async function (name: string) {
-  const created = await ticketPage.isTicketCreated(name);
+  ensurePageInitialized(this);
+  const ticketName = this.lastTicketName || name;
+  const category = this.selectedTicketCategory;
+  const created = category
+    ? await ticketPage.isTicketListedUnderCategory(ticketName, category)
+    : await ticketPage.isTicketCreated(ticketName);
+
   expect(created).toBeTruthy();
-  console.log(`✅ Ticket "${name}" created successfully`);
+  console.log(`✅ Ticket "${ticketName}" created successfully${category ? ` under category "${category}"` : ''}`);
 });
 
 Then('ticket should not be created with name {string}', async function (name: string) {
