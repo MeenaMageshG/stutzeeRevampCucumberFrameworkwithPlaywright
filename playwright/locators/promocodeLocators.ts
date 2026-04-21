@@ -1,4 +1,3 @@
-import { create } from "node:domain";
 import { LocatorUtils } from "../utils/locatorUtils";
 
 export const promoCodeLocators = {
@@ -14,6 +13,12 @@ export const promoCodeLocators = {
   //expiryDateInput: LocatorUtils.byAttribute('input', 'placeholder', 'MM/DD/YYYY', 2),
   activeButton: LocatorUtils.containsTextIn('button', 'Active'),
   inactiveButton: LocatorUtils.containsTextIn('button', 'Inactive'),
-ticketSelection: (ticketName: string) => LocatorUtils.ticketCard(ticketName),
-   createPromoButton: LocatorUtils.containsTextIn('button', 'Create Promocode'),
+  applicableTicketsCard: "//h6[normalize-space(.)='Applicable Tickets']/ancestor::div[contains(@class,'MuiCard-root')][1]",
+  ticketCardByName: (ticketName: string) =>
+    `xpath=.//h5[normalize-space(.)='${ticketName}']/ancestor::div[contains(@class,'MuiCard-root')][1]`,
+  ticketCardByPartialName: (ticketName: string) =>
+    `xpath=.//h5[contains(translate(normalize-space(.),'abcdefghijklmnopqrstuvwxyz','ABCDEFGHIJKLMNOPQRSTUVWXYZ'),'${ticketName.trim().toUpperCase()}')]/ancestor::div[contains(@class,'MuiCard-root')][1]`,
+  promoCardByName: (promoName: string) =>
+    `//h5[normalize-space(.)='${promoName}']/ancestor::div[contains(@class,'MuiCard-root')][1]`,
+  createPromoButton: LocatorUtils.containsTextIn('button', 'Create Promocode'),
 };

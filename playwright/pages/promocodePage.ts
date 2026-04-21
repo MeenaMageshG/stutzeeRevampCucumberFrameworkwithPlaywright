@@ -18,6 +18,7 @@ export class PromoCodePage {
 
   async clickAddNewPromo() {
     await this.page.locator(promoCodeLocators.addNewPromoButton).click();
+    await this.page.locator(promoCodeLocators.promoCodeInput).waitFor({ state: 'visible', timeout: 30000 });
   }
 
   // ================= FORM INPUT =================
@@ -64,13 +65,33 @@ export class PromoCodePage {
   }
 
   async selectTicket(ticketName: string) {
-    const locator = this.page
-      .locator(promoCodeLocators.ticketSelection(ticketName))
+    const applicableTicketsCard = this.page.locator(promoCodeLocators.applicableTicketsCard).first();
+    await applicableTicketsCard.waitFor({ state: 'visible', timeout: 10000 });
+
+    const exactTicketCard = applicableTicketsCard
+      .locator(promoCodeLocators.ticketCardByName(ticketName))
       .first();
 
-    await locator.waitFor({ state: 'visible', timeout: 5000 });
-    await locator.scrollIntoViewIfNeeded();
-    await locator.click({ force: true });
+    if (await exactTicketCard.isVisible().catch(() => false)) {
+      await exactTicketCard.scrollIntoViewIfNeeded();
+      await exactTicketCard.click();
+      return;
+    }
+
+    const partialTicketCard = applicableTicketsCard
+      .locator(promoCodeLocators.ticketCardByPartialName(ticketName))
+      .first();
+
+    if (await partialTicketCard.isVisible().catch(() => false)) {
+      await partialTicketCard.scrollIntoViewIfNeeded();
+      await partialTicketCard.click();
+      return;
+    }
+
+    const availableTickets = await this.getAvailableTicketNames();
+    throw new Error(
+      `Ticket "${ticketName}" was not found in promo form. Available tickets: ${availableTickets.join(', ') || 'none'}`
+    );
   }
 
   // ================= ACTION =================
@@ -96,6 +117,17 @@ export class PromoCodePage {
 
       await promoLocator.waitFor({ state: 'visible', timeout: 5000 });
       return await promoLocator.isVisible();
+    } catch {
+      return false;
+    }
+  }
+
+  async isPromoListed(promoName: string): Promise<boolean> {
+    const promoCard = this.page.locator(promoCodeLocators.promoCardByName(promoName)).first();
+
+    try {
+      await promoCard.waitFor({ state: 'visible', timeout: 10000 });
+      return await promoCard.isVisible();
     } catch {
       return false;
     }
@@ -170,5 +202,13 @@ export class PromoCodePage {
     } catch {
       // ignore silently
     }
+  }
+
+  private async getAvailableTicketNames(): Promise<string[]> {
+    const applicableTicketsCard = this.page.locator(promoCodeLocators.applicableTicketsCard).first();
+    const ticketHeadings = applicableTicketsCard.locator('h5');
+    const names = await ticketHeadings.allInnerTexts().catch(() => []);
+
+    return names.map((name) => name.trim()).filter(Boolean);
   }
 }

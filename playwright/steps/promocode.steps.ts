@@ -13,6 +13,9 @@ function ensurePageInitialized(context: any) {
 //
 interface CustomWorld {
   generatedCode?: string;
+  generatedPromoName?: string;
+  lastPromoCode?: string;
+  lastPromoName?: string;
 }
 
 //
@@ -31,22 +34,41 @@ When('user clicks on Add New Promocode button', async function () {
 
 When('user enters promo code {string}', async function (code: string) {
   ensurePageInitialized(this);
+  const world = this as CustomWorld;
 
-  // 🔥 Only generate unique for positive scenarios
-  if (code && !this.generatedCode) {
-    const uniqueCode = code + Date.now();
-    (this as CustomWorld).generatedCode = uniqueCode;
-
-    await promoPage.enterPromoCode(uniqueCode);
-  } else {
-    // for negative scenarios (empty / duplicate)
+  if (!code) {
+    world.lastPromoCode = code;
     await promoPage.enterPromoCode(code);
+    return;
   }
+
+  if (code === '__LAST_PROMO_CODE__') {
+    const duplicateCode = world.generatedCode || world.lastPromoCode;
+    if (!duplicateCode) {
+      throw new Error('No previously generated promo code is available for duplicate-code validation');
+    }
+
+    world.lastPromoCode = duplicateCode;
+    await promoPage.enterPromoCode(duplicateCode);
+    return;
+  }
+
+  const uniqueCode = `${code}${Date.now()}`;
+  world.generatedCode = uniqueCode;
+  world.lastPromoCode = uniqueCode;
+
+  await promoPage.enterPromoCode(uniqueCode);
 });
 
 When('user enters promo name {string}', async function (name: string) {
   ensurePageInitialized(this);
-  await promoPage.enterPromoName(name);
+  const world = this as CustomWorld;
+  const uniqueName = name ? `${name} ${Date.now()}` : name;
+
+  world.generatedPromoName = uniqueName;
+  world.lastPromoName = uniqueName;
+
+  await promoPage.enterPromoName(uniqueName);
 });
 
 When('user selects discount type Amount', async function () {
@@ -89,29 +111,21 @@ When('user clicks on Create Promocode button', async function () {
 //
 
 Then('promocode should be created successfully with code {string}', async function (code: string) {
+  ensurePageInitialized(this);
+  const world = this as CustomWorld;
+  const promoName = world.lastPromoName || code;
+  const promoCode = world.lastPromoCode || code;
+  const created = await promoPage.isPromoListed(promoName);
 
-  const world = this as any;
-
-  const successMessage = await promoPage.getSuccessMessage();
-
-  expect(successMessage).not.toBeNull();
-  console.log('✅ Success:', successMessage);
-
-  // optional validation using generated code
-  if (world.generatedCode) {
-    const created = await promoPage.isPromoCreated(world.generatedCode);
-
-    if (!created) {
-      console.log('⚠️ Promo created but not visible in list (UI delay)');
-    }
-  }
+  expect(created).toBeTruthy();
+  console.log(`✅ Promocode "${promoCode}" created successfully for promo "${promoName}"`);
 });
 Then('promocode should not be created with code {string}', async function (code: string) {
-
+  ensurePageInitialized(this);
   const world = this as CustomWorld;
+  const promoName = world.lastPromoName || '';
 
-  // 🔥 Check if wrongly created
-  const created = await promoPage.isPromoCreated(world.generatedCode || code);
+  const created = promoName ? await promoPage.isPromoListed(promoName) : false;
 
   if (created) {
     throw new Error(`❌ Promo should NOT be created, but it exists`);

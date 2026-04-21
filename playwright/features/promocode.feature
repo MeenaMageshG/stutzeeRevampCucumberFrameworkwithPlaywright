@@ -17,8 +17,8 @@ Feature: Promo Code Creation Flow
     And user enters maximum usage "10"
     And user enters expiry date "06/05/2026"
     And user selects status "Active"
-    And user selects ticket "VIP PASS"
-    And user selects ticket "Premium Individual"
+    And user selects ticket "Couple Pass"
+    And user selects ticket "Student Pass"
     And user clicks on Create Promocode button
     Then promocode should be created successfully with code "EFYDFY"
 
@@ -31,7 +31,7 @@ Feature: Promo Code Creation Flow
     And user enters maximum usage "5"
     And user enters expiry date "06/05/2026"
     And user selects status "Inactive"
-    And user selects ticket "VIP Pass"
+    And user selects ticket "Couple Pass"
     And user clicks on Create Promocode button
     Then promocode should be created successfully with code "INACTIVE123"
 
@@ -45,22 +45,33 @@ Feature: Promo Code Creation Flow
     And user enters maximum usage "10"
     And user enters expiry date "06/05/2026"
     And user selects status "Active"
-    And user selects ticket "VIP PASS"
+    And user selects ticket "Couple Pass"
     And user clicks on Create Promocode button
     Then promocode should not be created with code ""
 
   Scenario: Create Promo Code with duplicate code
     And user clicks on Add New Promocode button
-    And user enters promo code "EFYDFY"
+    And user enters promo code "DUPLICATEPROMO"
     And user enters promo name "Duplicate VIP"
     And user selects discount type Amount
     And user enters discount value "1200"
     And user enters maximum usage "10"
     And user enters expiry date "06/05/2026"
     And user selects status "Active"
-    And user selects ticket "VIP PASS"
+    And user selects ticket "Couple Pass"
     And user clicks on Create Promocode button
-    Then promocode should not be created with code "EFYDFY"
+    Then promocode should be created successfully with code "DUPLICATEPROMO"
+    And user clicks on Add New Promocode button
+    And user enters promo code "__LAST_PROMO_CODE__"
+    And user enters promo name "Duplicate VIP Retry"
+    And user selects discount type Amount
+    And user enters discount value "1200"
+    And user enters maximum usage "10"
+    And user enters expiry date "06/05/2026"
+    And user selects status "Active"
+    And user selects ticket "Couple Pass"
+    And user clicks on Create Promocode button
+    Then promocode should not be created with code "__LAST_PROMO_CODE__"
 
   Scenario: Create Promo Code with invalid discount value
     And user clicks on Add New Promocode button
@@ -71,7 +82,7 @@ Feature: Promo Code Creation Flow
     And user enters maximum usage "10"
     And user enters expiry date "06/05/2026"
     And user selects status "Active"
-    And user selects ticket "VIP PASS"
+    And user selects ticket "Couple Pass"
     And user clicks on Create Promocode button
     Then promocode should not be created with code "INVALIDDISC"
 
