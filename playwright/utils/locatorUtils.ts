@@ -42,4 +42,9 @@ static ticketCard(ticketName: string) {
           '${ticketName.toUpperCase()}')]`;
 }
 
+static byIndex(tag: string, attr: string, value: string, index: number) {
+  return `(//${tag}[@${attr}='${value}'])[${index}]`;
+}
+
+
   }
