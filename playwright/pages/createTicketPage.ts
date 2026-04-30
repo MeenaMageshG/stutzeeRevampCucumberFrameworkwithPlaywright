@@ -16,25 +16,28 @@ export class TicketPage {
 
   async chooseCategory(category: string): Promise<string> {
     await this.page.locator(ticketLocators.categoryDropdown).click();
-
     const dropdown = this.page.locator(ticketLocators.ticketCategoryDropdown).last();
     await dropdown.waitFor({ state: 'visible', timeout: 30000 });
     await dropdown.click();
 
-    const exactOption = this.page.locator(ticketLocators.categoryOption(category)).first();
+    const exactOption = this.page.getByRole('option', { name: category, exact: true }).first();
     if (await exactOption.isVisible().catch(() => false)) {
       const selectedCategory = (await exactOption.innerText()).trim();
       await exactOption.click();
       return selectedCategory;
     }
 
-    const partialOption = this.page
-      .locator(`//li[contains(translate(normalize-space(.), 'abcdefghijklmnopqrstuvwxyz', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'), '${category.trim().toUpperCase()}')]`)
-      .first();
+    const partialOption = this.page.getByRole('option', { name: new RegExp(category, 'i') }).first();
+    if (await partialOption.isVisible().catch(() => false)) {
+      const selectedCategory = (await partialOption.innerText()).trim();
+      await partialOption.click();
+      return selectedCategory;
+    }
 
-    await partialOption.waitFor({ state: 'visible', timeout: 10000 });
-    const selectedCategory = (await partialOption.innerText()).trim();
-    await partialOption.click();
+    const listItem = this.page.locator('li, [role="option"]').first();
+    await listItem.waitFor({ state: 'visible', timeout: 10000 });
+    const selectedCategory = (await listItem.innerText()).trim();
+    await listItem.click();
     return selectedCategory;
   }
 
