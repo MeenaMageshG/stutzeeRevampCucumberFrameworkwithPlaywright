@@ -6,8 +6,8 @@ Feature: Sponsor Membership Tiers Management
     And user selects first event from list
     Then user should navigate to event dashboard
     And user clicks on Event Management in side menu
-    And user clicks on Sponsors module
-    And user clicks on Membership Tiers menu
+    And user clicks on Sponsor Tiers module
+    And user clicks on Sponsor Tiers menu
     Then user should be on Membership Tiers page
 
   Scenario: Create a valid Sponsor Membership Tier
@@ -53,7 +53,7 @@ Feature: Sponsor Membership Tiers Management
     And user enters max team size "5"
     And user enters benefit "Logo on Website"
     And user clicks on Save Tier button
-    Then system should show error "Tier name is required"
+    Then sponsor tier system should show error "Tier name is required"
 
   Scenario: Create Tier with missing minimum contribution
     And user clicks on Create New Tier button
@@ -63,7 +63,7 @@ Feature: Sponsor Membership Tiers Management
     And user enters max team size "5"
     And user enters benefit "Social Media Promotion"
     And user clicks on Save Tier button
-    Then system should show error "Min Contribution is required"
+    Then sponsor tier system should show error "Min Contribution is required"
 
   Scenario: Create Tier with invalid contribution
     And user clicks on Create New Tier button
@@ -73,7 +73,7 @@ Feature: Sponsor Membership Tiers Management
     And user enters max team size "5"
     And user enters benefit "Social Media Promotion"
     And user clicks on Save Tier button
-    Then system should show error "Min Contribution is required"
+    Then sponsor tier system should show error "Min Contribution is required"
 
   Scenario: Update an existing Sponsor Membership Tier
     Given sponsor membership tier exists with name "Update Tier", minimum contribution "3500", color code "#336699", max team size "8", and benefit "Newsletter Mention"

@@ -20,6 +20,28 @@ Given('user is logged in', async function () {
   // ✅ Wait for dashboard load
   await this.page.waitForURL('**/dashboard', { timeout: 60000 });
 });
+
+When('user navigates to dashboard', async function () {
+  // ✅ Verify dashboard URL
+  await assertion.verifyUrlContains('/dashboard');
+});
+
+When('user clicks on Organisers in side menu', async function () {
+  await dashboardPage.clickOrganizerMenu();
+});
+
+When('user clicks organizer menu', async function () {
+  await dashboardPage.clickOrganizerMenu();
+});
+
+When('user impersonates organiser', async function () {
+  await dashboardPage.clickImpersonateButton();
+});
+
+Then('impersonate to the first orgnaizer in the list', async function () {
+  await dashboardPage.clickImpersonateButton();
+});
+
 When('user clicks on Events in side menu', async function () {
   await dashboardPage.clickEventsMenu();
 });

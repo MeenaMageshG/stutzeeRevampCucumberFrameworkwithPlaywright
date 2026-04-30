@@ -56,12 +56,12 @@ function resolveTierNameForInput(world: SponsorMembershipTierWorld, value: strin
   return `${value} ${Date.now()}`;
 }
 
-When('user clicks on Sponsors module', async function () {
+When('user clicks on Sponsor Tiers module', async function () {
   ensurePageInitialized(this);
   await sponsorMembershipTiersPage.clickSponsorsMenu();
 });
 
-When('user clicks on Membership Tiers menu', async function () {
+When('user clicks on Sponsor Tiers menu', async function () {
   ensurePageInitialized(this);
   await sponsorMembershipTiersPage.clickMembershipTiersMenu();
 });
@@ -277,7 +277,7 @@ Then('user should be on Membership Tiers page', async function () {
   }
 });
 
-Then('system should show error {string}', async function (expectedError: string) {
+Then('sponsor tier system should show error {string}', async function (expectedError: string) {
   ensurePageInitialized(this);
   const errorMessages = await sponsorMembershipTiersPage.getErrorMessages();
   const normalizedExpectedError = expectedError.toLowerCase();
