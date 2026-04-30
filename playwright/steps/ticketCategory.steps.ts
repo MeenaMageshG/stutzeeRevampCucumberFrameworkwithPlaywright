@@ -10,15 +10,20 @@ function ensurePageInitialized(context: any) {
 // Lowercase step definitions
 When('user clicks on Event Management in side menu', async function () {
   ensurePageInitialized(this);
+  // Wait for page to be fully loaded
   await this.page.waitForLoadState('domcontentloaded').catch(() => {});
-  await this.page.waitForTimeout(500);
+  await this.page.waitForLoadState('load', { timeout: 10000 }).catch(() => {});
+  await this.page.waitForTimeout(1000);
+  console.log(`About to click Event Management. Current URL: ${this.page.url()}`);
   await ticketCategoryPage.clickEventManagementMenu();
 });
 
 When('user clicks on Ticketing module', async function () {
   ensurePageInitialized(this);
   await this.page.waitForLoadState('domcontentloaded').catch(() => {});
+  await this.page.waitForLoadState('load', { timeout: 10000 }).catch(() => {});
   await this.page.waitForTimeout(500);
+  console.log(`About to click Ticketing. Current URL: ${this.page.url()}`);
   await ticketCategoryPage.clickTicketingMenu();
 });
 

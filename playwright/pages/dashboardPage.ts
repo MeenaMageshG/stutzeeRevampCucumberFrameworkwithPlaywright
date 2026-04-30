@@ -25,20 +25,28 @@ export class DashboardPage {
   }
 
   async selectFirstEvent() {
-    await this.page.waitForLoadState('load');
-    
-    // Look for the first card/clickable element - typically an event card
-    const eventCard = this.page.locator('div[class*="MuiCard"], div[class*="card"], article, li[class*="item"]').first();
-    
-    const exists = await eventCard.isVisible({ timeout: 5000 }).catch(() => false);
-    
-    if (exists) {
-      await eventCard.click();
-    } else {
-      // Fallback: click the first visible button or link
-      const clickable = this.page.locator('button, a, [role="button"]').first();
-      await clickable.waitFor({ state: 'visible', timeout: 5000 });
-      await clickable.click();
-    }
+    await this.page.waitForLoadState('networkidle').catch(() => {});
+    await this.page.waitForFunction(() => {
+      const rows = Array.from(document.querySelectorAll('tr'));
+      return rows.some((row) => /\d{2}\/\d{2}\/\d{4}/.test(row.textContent || ''));
+    }, { timeout: 15000 }).catch(() => {});
+
+    const firstEventTitle = this.page
+      .locator('tr')
+      .filter({ hasText: /\d{2}\/\d{2}\/\d{4}/ })
+      .first()
+      .locator('td')
+      .first()
+      .locator('p')
+      .first();
+
+    await firstEventTitle.waitFor({ state: 'visible', timeout: 15000 });
+    await firstEventTitle.click({ timeout: 30000 });
+    await this.page.waitForURL(
+      (url) => url.toString().toLowerCase().includes('/event/'),
+      { timeout: 10000 }
+    ).catch(() => {});
+    await this.page.waitForTimeout(1000);
   }
+
 }

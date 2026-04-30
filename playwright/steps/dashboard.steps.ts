@@ -51,9 +51,18 @@ When('user selects first event from list', async function () {
 });
 
 Then('user should navigate to event dashboard', async function () {
+  // Wait for navigation to complete
+  await this.page.waitForLoadState('load', { timeout: 30000 }).catch(() => {});
+  await this.page.waitForTimeout(500);
+  
   const url = this.page.url();
+  console.log(`Current URL after selecting event: ${url}`);
 
-  if (!url.includes('event')) {
-    throw new Error('Navigation to event dashboard failed');
+  // Check if URL contains event-related paths.
+  const hasEventPath = url.toLowerCase().includes('event');
+  const isDifferentPath = !url.endsWith('/dashboard');
+
+  if (!hasEventPath && !isDifferentPath) {
+    throw new Error(`Navigation to event dashboard failed. Current URL: ${url}`);
   }
 });

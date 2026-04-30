@@ -15,20 +15,71 @@ export class TicketCategoryPage {
   }
 
   async clickEventManagementMenu() {
-    const menu = this.page.locator(ticketCategoryLocators.eventManagementMenu);
-    await menu.waitFor({ state: 'visible', timeout: 30000 });
+    await this.page.waitForLoadState('networkidle').catch(() => {});
+    await this.page.waitForFunction(
+      (label) => document.body.innerText.toLowerCase().includes(String(label).toLowerCase()),
+      'Event Management',
+      { timeout: 15000 }
+    ).catch(() => {});
+
+    const menu = await this.resolveMenuItem('Event Management', [
+      ticketCategoryLocators.eventManagementMenu,
+      ticketCategoryLocators.eventManagementMenuSpan,
+      ticketCategoryLocators.eventManagementMenuDiv,
+    ]);
+
+    if (!menu) {
+      const diagnostics = await this.getMenuDiagnostics('Event Management');
+      throw new Error(
+        `Event Management menu not found. ${diagnostics}. Current URL: ${this.page.url()}`
+      );
+    }
+
+    const isVisible = await menu.isVisible().catch(() => false);
+    if (!isVisible) {
+      const diagnostics = await this.getMenuDiagnostics('Event Management');
+      throw new Error(
+        `Event Management menu is present but not visible. ${diagnostics}. Current URL: ${this.page.url()}`
+      );
+    }
+    
     await menu.scrollIntoViewIfNeeded();
     try {
       await menu.click({ timeout: 30000 });
-    } catch {
+    } catch (err) {
+      console.log('Click failed, trying force click...');
       await menu.click({ force: true, timeout: 30000 });
     }
-    await this.page.locator(ticketCategoryLocators.ticketingMenu).waitFor({ state: 'visible', timeout: 30000 });
+    
+    // Wait for Ticketing menu to appear
+    const ticketingMenu = this.page.locator(ticketCategoryLocators.ticketingMenu);
+    await ticketingMenu.waitFor({ state: 'visible', timeout: 30000 }).catch(() => {
+      // Try alternative selector
+      return this.page.locator(ticketCategoryLocators.ticketingMenuSpan).waitFor({ state: 'visible', timeout: 30000 }).catch(() => {
+        return this.page.locator(ticketCategoryLocators.ticketingMenuDiv).waitFor({ state: 'visible', timeout: 30000 });
+      });
+    });
   }
 
   async clickTicketingMenu() {
-    const menu = this.page.locator(ticketCategoryLocators.ticketingMenu);
-    await menu.waitFor({ state: 'visible', timeout: 30000 });
+    await this.page.waitForLoadState('networkidle').catch(() => {});
+    await this.page.waitForFunction(
+      (label) => document.body.innerText.toLowerCase().includes(String(label).toLowerCase()),
+      'Ticketing',
+      { timeout: 15000 }
+    ).catch(() => {});
+
+    const menu = await this.resolveMenuItem('Ticketing', [
+      ticketCategoryLocators.ticketingMenu,
+      ticketCategoryLocators.ticketingMenuSpan,
+      ticketCategoryLocators.ticketingMenuDiv,
+    ]);
+
+    if (!menu) {
+      const diagnostics = await this.getMenuDiagnostics('Ticketing');
+      throw new Error(`Ticketing menu not found. ${diagnostics}. Current URL: ${this.page.url()}`);
+    }
+
     if (!(await menu.isEnabled())) {
       throw new Error('Ticketing menu is visible but not enabled/clickable');
     }
@@ -112,5 +163,47 @@ export class TicketCategoryPage {
     } catch {
       return false;
     }
+  }
+
+  private async resolveMenuItem(label: string, fallbackLocators: string[]): Promise<Locator | null> {
+    const labelPattern = new RegExp(label, 'i');
+    const candidates: Locator[] = [
+      this.page.getByRole('button', { name: labelPattern }).first(),
+      this.page.getByRole('link', { name: labelPattern }).first(),
+      this.page.getByRole('menuitem', { name: labelPattern }).first(),
+      this.page.getByText(labelPattern).first(),
+      ...fallbackLocators.map((locator) => this.page.locator(locator).first()),
+      this.page
+        .locator('nav, aside, [role="navigation"]')
+        .locator('button, a, [role="button"], [role="link"], [role="menuitem"], h1, h2, h3, h4, h5, h6, span, div')
+        .filter({ hasText: labelPattern })
+        .first(),
+      this.page
+        .locator('button, a, [role="button"], [role="link"], [role="menuitem"], h1, h2, h3, h4, h5, h6, span, div')
+        .filter({ hasText: labelPattern })
+        .first(),
+    ];
+
+    for (const candidate of candidates) {
+      if (await candidate.isVisible({ timeout: 5000 }).catch(() => false)) {
+        return candidate;
+      }
+    }
+
+    return null;
+  }
+
+  private async getMenuDiagnostics(label: string): Promise<string> {
+    const labelPattern = new RegExp(label, 'i');
+    const roleCounts = await Promise.all([
+      this.page.getByRole('button', { name: labelPattern }).count().catch(() => 0),
+      this.page.getByRole('link', { name: labelPattern }).count().catch(() => 0),
+      this.page.getByRole('menuitem', { name: labelPattern }).count().catch(() => 0),
+    ]);
+    const textCount = await this.page.getByText(labelPattern).count().catch(() => 0);
+    const allText = await this.page.locator('body').allTextContents().catch(() => []);
+    const hasText = allText.some((text) => labelPattern.test(text));
+
+    return `buttons: ${roleCounts[0]}, links: ${roleCounts[1]}, menuitems: ${roleCounts[2]}, text matches: ${textCount}, body text: ${hasText}`;
   }
 }
