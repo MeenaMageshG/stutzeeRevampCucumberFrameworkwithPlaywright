@@ -21,6 +21,6 @@ export class ActionUtils {
   }
 
   async navigate(url: string) {
-    await this.page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await this.page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
   }
 }

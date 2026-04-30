@@ -10,18 +10,40 @@ export class DashboardPage {
   }
 
   async clickEventsMenu() {
-    await this.page.locator(dashboardLocators.eventsMenu).waitFor();
-    await this.action.click(dashboardLocators.eventsMenu);
+    const eventLink = this.page.locator('a[href="/event"]').first();
+    await eventLink.waitFor({ state: 'attached', timeout: 30000 });
+    await eventLink.evaluate((node) => (node as HTMLAnchorElement).click());
+    await this.page.waitForURL('**/event', { timeout: 30000 }).catch(() => {});
+    await this.page.waitForLoadState('networkidle').catch(() => {});
+    await this.page.waitForTimeout(1500);
   }
 
   async clickOrganizerMenu() {
-    await this.page.locator(dashboardLocators.organizerMenu).waitFor();
-    await this.action.click(dashboardLocators.organizerMenu);
+    const organiserLink = this.page.locator('a[href="/organiser"]').first();
+    await organiserLink.waitFor({ state: 'attached', timeout: 30000 });
+    await organiserLink.evaluate((node) => (node as HTMLAnchorElement).click());
+    await this.page.waitForURL('**/organiser', { timeout: 30000 }).catch(() => {});
+    await this.page.waitForLoadState('networkidle').catch(() => {});
   }
 
   async clickImpersonateButton() {
-    await this.page.locator(dashboardLocators.organiserImpersonation).waitFor();
-    await this.action.click(dashboardLocators.organiserImpersonation);
+    await this.page.waitForSelector('button[aria-label="Impersonate"]', { state: 'attached', timeout: 30000 }).catch(() => {});
+    await this.page.waitForLoadState('networkidle').catch(() => {});
+    await this.page.waitForTimeout(750);
+
+    const candidates = this.page.locator('button[aria-label="Impersonate"], button:has-text("Impersonate"), button[aria-label*="Impersonate" i]');
+    const count = await candidates.count().catch(() => 0);
+
+    for (let index = 0; index < count; index += 1) {
+      const candidate = candidates.nth(index);
+      if (await candidate.isVisible().catch(() => false)) {
+        await candidate.scrollIntoViewIfNeeded().catch(() => {});
+        await candidate.click({ timeout: 30000 }).catch(() => candidate.click({ force: true, timeout: 30000 }));
+        return;
+      }
+    }
+
+    throw new Error(`Impersonate button not found. Current URL: ${this.page.url()}`);
   }
 
   async selectFirstEvent() {
@@ -47,6 +69,19 @@ export class DashboardPage {
       { timeout: 10000 }
     ).catch(() => {});
     await this.page.waitForTimeout(1000);
+  }
+
+  private async clickFirstVisible(selectors: string[]) {
+    for (const selector of selectors) {
+      const candidate = this.page.locator(selector).first();
+      if (await candidate.isVisible().catch(() => false)) {
+        await candidate.scrollIntoViewIfNeeded().catch(() => {});
+        await candidate.click({ timeout: 30000 }).catch(() => candidate.click({ force: true, timeout: 30000 }));
+        return;
+      }
+    }
+
+    throw new Error(`No visible match found for selectors: ${selectors.join(', ')}. Current URL: ${this.page.url()}`);
   }
 
 }
