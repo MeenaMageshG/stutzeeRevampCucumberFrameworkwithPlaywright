@@ -33,7 +33,7 @@ When('user enters tier details {string} {string} {string} {string}', async funct
   await sponsorPage.enterTierDetails(name, contribution, color, teamSize);
 });
 
-When('user clicks on Save Tier button', async function () {
+When('user clicks on Save New Tier button', async function () {
   ensurePageInitialized(this);
   await sponsorPage.saveTier();
 });

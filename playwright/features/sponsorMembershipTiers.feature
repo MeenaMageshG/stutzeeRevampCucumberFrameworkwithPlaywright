@@ -1,11 +1,12 @@
 Feature: Sponsor Membership Tiers Management
 
   Background:
-    Given user is logged in
+   Given user is logged in
+    And user clicks organizer menu
+    Then impersonate to the first orgnaizer in the list
     And user clicks on Events in side menu
     And user selects first event from list
     Then user should navigate to event dashboard
-    And user clicks on Event Management in side menu
     And user clicks on Sponsor Tiers module
     And user clicks on Sponsor Tiers menu
     Then user should be on Membership Tiers page
