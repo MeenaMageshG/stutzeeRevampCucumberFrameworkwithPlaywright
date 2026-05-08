@@ -78,6 +78,9 @@ Given(
     const world = this as SponsorMembershipTierWorld;
     const actualName = resolveTierNameForInput(world, name);
 
+    await sponsorMembershipTiersPage.deleteAllTiers();
+    await this.page.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
+    await sponsorMembershipTiersPage.waitForMembershipTiersPage();
     await sponsorMembershipTiersPage.clickCreateTierButton();
     await sponsorMembershipTiersPage.createTier(actualName, minContribution, colorCode, maxTeamSize, benefit);
 

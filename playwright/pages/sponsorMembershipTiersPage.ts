@@ -88,15 +88,20 @@ export class SponsorMembershipTiersPage {
   }
 
   async isTierListed(name: string): Promise<boolean> {
-    await this.page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-    const tierCard = this.getTierCard(name);
+    const deadline = Date.now() + 30000;
 
-    try {
-      await tierCard.waitFor({ state: 'visible', timeout: 10000 });
-      return await tierCard.isVisible();
-    } catch {
-      return false;
+    while (Date.now() < deadline) {
+      await this.page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
+      const tierCard = this.getTierCard(name);
+
+      if (await tierCard.isVisible().catch(() => false)) {
+        return true;
+      }
+
+      await this.page.waitForTimeout(1000);
     }
+
+    return false;
   }
 
   async getTierCardText(name: string): Promise<string | null> {
@@ -121,7 +126,7 @@ export class SponsorMembershipTiersPage {
     await this.clickActionButton(deleteButton);
     await this.confirmDeleteIfPresent();
     await this.page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-    await this.page.waitForTimeout(1000);
+    await this.waitForTierToDisappear(name);
   }
 
   async deleteAllTiers() {
@@ -129,14 +134,20 @@ export class SponsorMembershipTiersPage {
     let attempts = 0;
 
     while (remainingTiers > 0 && attempts < 50) {
-      const tierCard = this.page.locator('div.MuiCard-root').last();
-      await tierCard.waitFor({ state: 'visible', timeout: 10000 });
+      const beforeDeleteCount = remainingTiers;
 
-      const deleteButton = await this.getActionButtonFromCard(tierCard, 'delete');
-      await this.clickActionButton(deleteButton);
-      await this.confirmDeleteIfPresent();
-      await this.page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-      await this.page.waitForTimeout(1000);
+      try {
+        const tierCard = this.page.locator('div.MuiCard-root').first();
+        await tierCard.waitFor({ state: 'visible', timeout: 10000 });
+
+        const deleteButton = await this.getActionButtonFromCard(tierCard, 'delete');
+        await this.clickActionButton(deleteButton);
+        await this.confirmDeleteIfPresent();
+        await this.waitForTierCountBelow(beforeDeleteCount);
+      } catch {
+        await this.page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
+        await this.page.waitForTimeout(1000);
+      }
 
       attempts += 1;
       remainingTiers = await this.getTierCount();
@@ -181,6 +192,7 @@ export class SponsorMembershipTiersPage {
     await this.enterMaxTeamSize(maxTeamSize);
     await this.enterBenefits(benefit);
     await this.clickSaveTierButton();
+    await this.waitForTierToAppear(name);
   }
 
   private async typeFieldValue(locator: string, value: string) {
@@ -258,11 +270,12 @@ export class SponsorMembershipTiersPage {
       }
     }
 
-    throw new Error(`Unable to find ${action} button for sponsor membership tier "${name}"`);
+    const cardText = (await tierCard.innerText().catch(() => '')).trim();
+    throw new Error(`Unable to find ${action} button for sponsor membership tier "${cardText}"`);
   }
 
   private async clickActionButton(button: Locator) {
-    await button.scrollIntoViewIfNeeded();
+    await button.scrollIntoViewIfNeeded().catch(() => {});
     await button.click({ timeout: 30000 }).catch(() => button.click({ force: true, timeout: 30000 }));
   }
 
@@ -272,6 +285,45 @@ export class SponsorMembershipTiersPage {
 
     if (isVisible) {
       await confirmButton.click({ timeout: 30000 }).catch(() => confirmButton.click({ force: true, timeout: 30000 }));
+    }
+  }
+
+  private async waitForTierToAppear(name: string) {
+    const appeared = await this.isTierListed(name);
+    if (!appeared) {
+      const errors = await this.getErrorMessages();
+      throw new Error(
+        `Sponsor Membership Tier "${name}" did not appear after save. Current URL: ${this.page.url()}. Errors: ${
+          errors.join(', ') || 'none'
+        }`
+      );
+    }
+  }
+
+  private async waitForTierToDisappear(name: string) {
+    const deadline = Date.now() + 30000;
+
+    while (Date.now() < deadline) {
+      if (!(await this.getTierCard(name).isVisible().catch(() => false))) {
+        return;
+      }
+
+      await this.page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
+      await this.page.waitForTimeout(1000);
+    }
+  }
+
+  private async waitForTierCountBelow(count: number) {
+    const deadline = Date.now() + 30000;
+
+    while (Date.now() < deadline) {
+      await this.page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
+
+      if ((await this.getTierCount()) < count) {
+        return;
+      }
+
+      await this.page.waitForTimeout(1000);
     }
   }
 }
